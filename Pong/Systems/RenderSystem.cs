@@ -25,8 +25,8 @@ namespace MochaMothMedia.Pong.Systems
 
 			_camera = CreateEntity();
 			_camera.Attach(new Transform(
-				new Vector3(0, 0, -30),
-				Quaternion.CreateFromAxisAngle(Vector3.Right, MathHelper.ToRadians(-20f))));
+				new Vector3(0, 0, -10)));
+				//Quaternion.CreateFromAxisAngle(Vector3.Right, MathHelper.ToRadians(-20f))););
 			_camera.Attach(new Camera());
 		}
 
@@ -43,17 +43,11 @@ namespace MochaMothMedia.Pong.Systems
 
 				foreach (ModelMesh modelMesh in mesh.Model.Meshes)
 				{
-					foreach (BasicEffect effect in modelMesh.Effects)
+					foreach (Effect effect in modelMesh.Effects)
 					{
-						effect.World = Matrix.CreateTranslation(transform.Position) * Matrix.CreateFromQuaternion(transform.Rotation);
-						effect.View = camera.ViewMatrix;
-						effect.Projection = camera.ProjectionMatrix;
-						effect.LightingEnabled = true;
-						effect.DirectionalLight0.DiffuseColor = new Vector3(0.5f, 0, 0);
-						effect.DirectionalLight0.Direction = new Vector3(1, 0, 0);
-						effect.DirectionalLight0.SpecularColor = new Vector3(0, 1f, 0);
-						effect.AmbientLightColor = new Vector3(0.2f, 0.2f, 0.2f);
-						effect.EmissiveColor = new Vector3(0, 0, 0);
+						effect.Parameters["WorldMatrix"].SetValue(Matrix.CreateTranslation(transform.Position) * Matrix.CreateFromQuaternion(transform.Rotation));
+						effect.Parameters["ViewMatrix"].SetValue(camera.ViewMatrix);
+						effect.Parameters["ProjectionMatrix"].SetValue(camera.ProjectionMatrix);
 					}
 
 					modelMesh.Draw();

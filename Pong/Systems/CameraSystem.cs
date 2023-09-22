@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using MochaMothMedia.Pong.Components;
 using MonoGame.Extended.Entities;
 using MonoGame.Extended.Entities.Systems;
+using System;
 
 namespace MochaMothMedia.Pong.Systems
 {

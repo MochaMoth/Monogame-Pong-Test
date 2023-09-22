@@ -12,6 +12,7 @@ namespace MochaMothMedia.Pong
 	{
 		private GraphicsDeviceManager _graphics;
 		private Model _boxModel;
+		private Effect _boxEffect;
 		private World _ecsWorld;
 
 		public Game1()
@@ -40,11 +41,12 @@ namespace MochaMothMedia.Pong
 		protected override void LoadContent()
 		{
 			_boxModel = Content.Load<Model>("box");
+			_boxEffect = Content.Load<Effect>("Shaders/TestShader");
 
 			Entity box = _ecsWorld.CreateEntity();
 			box.Attach(new Transform(new Vector3(0, 0, 0)));
 			box.Attach(new Box());
-			box.Attach(new Mesh(_boxModel));
+			box.Attach(new Mesh(_boxModel, _boxEffect));
 		}
 
 		protected override void Update(GameTime gameTime)
