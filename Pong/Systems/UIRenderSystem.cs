@@ -1,7 +1,9 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Entities;
 using MonoGame.Extended.Entities.Systems;
+using GameTime = Microsoft.Xna.Framework.GameTime;
+using Color = Microsoft.Xna.Framework.Color;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace MochaMothMedia.Pong.Systems
 {

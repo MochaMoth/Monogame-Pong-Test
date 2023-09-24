@@ -1,10 +1,14 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MochaMothMedia.Pong.Components;
 using MochaMothMedia.Pong.Systems;
 using MonoGame.Extended.Entities;
 using System;
+using Vector3 = System.Numerics.Vector3;
+using GameTime = Microsoft.Xna.Framework.GameTime;
+using Game = Microsoft.Xna.Framework.Game;
+using GraphicsDeviceManager = Microsoft.Xna.Framework.GraphicsDeviceManager;
+using PlayerIndex = Microsoft.Xna.Framework.PlayerIndex;
 
 namespace MochaMothMedia.Pong
 {
@@ -12,12 +16,16 @@ namespace MochaMothMedia.Pong
 	{
 		private GraphicsDeviceManager _graphics;
 		private Model _boxModel;
+		private Model _boxModel2;
 		private Effect _boxEffect;
 		private World _ecsWorld;
 
 		public Game1()
 		{
-			_graphics = new GraphicsDeviceManager(this);
+			_graphics = new GraphicsDeviceManager(this)
+			{
+				GraphicsProfile = GraphicsProfile.HiDef
+			};
 			Content.RootDirectory = "Content";
 			IsMouseVisible = true;
 			Window.AllowUserResizing = true;
@@ -29,8 +37,9 @@ namespace MochaMothMedia.Pong
 			_ecsWorld = new WorldBuilder()
 				.AddSystem(new BoxSystem())
 				.AddSystem(new CameraSystem(_graphics))
+				//.AddSystem(new TestingRenderingSystem(GraphicsDevice))
 				.AddSystem(new RenderSystem(GraphicsDevice))
-				.AddSystem(new UIRenderSystem(GraphicsDevice))
+				//.AddSystem(new UIRenderSystem(GraphicsDevice))
 				.Build();
 
 			Components.Add(_ecsWorld);
@@ -41,12 +50,23 @@ namespace MochaMothMedia.Pong
 		protected override void LoadContent()
 		{
 			_boxModel = Content.Load<Model>("box");
+			_boxModel2 = Content.Load<Model>("box2");
 			_boxEffect = Content.Load<Effect>("Shaders/TestShader");
+			Statics.Content.TestingEffect = Content.Load<Effect>("Shaders/TestingShader2");
+
+			Statics.Camera.Main = _ecsWorld.CreateEntity();
+			Statics.Camera.Main.Attach(new Transform(new Vector3(0, 0, 10f)));
+			Statics.Camera.Main.Attach(new Camera());
 
 			Entity box = _ecsWorld.CreateEntity();
 			box.Attach(new Transform(new Vector3(0, 0, 0)));
 			box.Attach(new Box());
 			box.Attach(new Mesh(_boxModel, _boxEffect));
+
+			Entity box2 = _ecsWorld.CreateEntity();
+			box2.Attach(new Transform(new Vector3(5f, 0, 0)));
+			box2.Attach(new Box());
+			box2.Attach(new Mesh(_boxModel2, _boxEffect));
 		}
 
 		protected override void Update(GameTime gameTime)

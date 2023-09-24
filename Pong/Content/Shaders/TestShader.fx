@@ -1,17 +1,18 @@
 ﻿#if OPENGL
-	#define SV_POSITION POSITION
-	#define VS_SHADERMODEL vs_3_0
-	#define PS_SHADERMODEL ps_3_0
+#define SV_POSITION POSITION
+#define VS_SHADERMODEL vs_3_0
+#define PS_SHADERMODEL ps_3_0
 #else
-	#define VS_SHADERMODEL vs_3_0
-	#define PS_SHADERMODEL ps_3_0
+#define VS_SHADERMODEL vs_4_0
+#define PS_SHADERMODEL ps_4_0
 #endif
 
-float4x4 WorldMatrix;
-float4x4 ViewMatrix;
-float4x4 ProjectionMatrix;
+float4x4 World;
+float4x4 View;
+float4x4 Projection;
 
 float4 AmbientColor = float4(0.5f, 0.5f, 0.5f, 1.0f);
+float AmbientIntensity = 1.0f;
 
 struct VertexInput
 {
@@ -27,16 +28,16 @@ PixelInput VertexShaderFunction(VertexInput input)
 {
 	PixelInput output = (PixelInput)0;
 
-	float4 worldPosition = mul(input.Position, WorldMatrix);
-	float4 viewPosition = mul(worldPosition, ViewMatrix);
-	output.Position = mul(viewPosition, ProjectionMatrix);
+	float4 worldPosition = mul(input.Position, World);
+	float4 viewPosition = mul(worldPosition, View);
+	output.Position = mul(viewPosition, Projection);
 
 	return output;
 };
 
 float4 PixelShaderFunction(PixelInput input) : COLOR0
 {
-	return AmbientColor;
+	return AmbientColor * AmbientIntensity;
 };
 
 technique Ambient

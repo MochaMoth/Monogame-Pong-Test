@@ -1,8 +1,11 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using MochaMothMedia.Pong.Components;
 using MonoGame.Extended.Entities;
 using MonoGame.Extended.Entities.Systems;
+using Vector3 = System.Numerics.Vector3;
+using Matrix = Microsoft.Xna.Framework.Matrix;
+using GameTime = Microsoft.Xna.Framework.GameTime;
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace MochaMothMedia.Pong.Systems
 {
@@ -11,7 +14,6 @@ namespace MochaMothMedia.Pong.Systems
 		private ComponentMapper<Transform> _transformMapper;
 		private ComponentMapper<Mesh> _meshMapper;
 		private GraphicsDevice _graphicsDevice;
-		private Entity _camera;
 
 		public RenderSystem(GraphicsDevice graphicsDevice) : base(Aspect.All(typeof(Transform), typeof(Mesh)))
 		{
@@ -22,19 +24,13 @@ namespace MochaMothMedia.Pong.Systems
 		{
 			_transformMapper = mapperService.GetMapper<Transform>();
 			_meshMapper = mapperService.GetMapper<Mesh>();
-
-			_camera = CreateEntity();
-			_camera.Attach(new Transform(
-				new Vector3(0, 0, -10)));
-				//Quaternion.CreateFromAxisAngle(Vector3.Right, MathHelper.ToRadians(-20f))););
-			_camera.Attach(new Camera());
 		}
 
 		public override void Draw(GameTime gameTime)
 		{
-			_graphicsDevice.Clear(Color.CornflowerBlue);
+			_graphicsDevice.Clear(Color.Black);
 
-			Camera camera = _camera.Get<Camera>();
+			Camera camera = Statics.Camera.Main.Get<Camera>();
 
 			foreach (int entityId in ActiveEntities)
 			{
@@ -43,11 +39,17 @@ namespace MochaMothMedia.Pong.Systems
 
 				foreach (ModelMesh modelMesh in mesh.Model.Meshes)
 				{
-					foreach (Effect effect in modelMesh.Effects)
+					//foreach (ModelMeshPart part in modelMesh.MeshParts)
+					//{
+					//	part.Effect.Parameters["World"].SetValue(Matrix.CreateFromQuaternion(transform.Rotation) * Matrix.CreateTranslation(transform.Position) * modelMesh.ParentBone.Transform);
+					//	part.Effect.Parameters["View"].SetValue(camera.ViewMatrix);
+					//	part.Effect.Parameters["Projection"].SetValue(camera.ProjectionMatrix);
+					//}
+					foreach (BasicEffect effect in modelMesh.Effects)
 					{
-						effect.Parameters["WorldMatrix"].SetValue(Matrix.CreateTranslation(transform.Position) * Matrix.CreateFromQuaternion(transform.Rotation));
-						effect.Parameters["ViewMatrix"].SetValue(camera.ViewMatrix);
-						effect.Parameters["ProjectionMatrix"].SetValue(camera.ProjectionMatrix);
+						effect.World = Matrix.CreateFromQuaternion(transform.Rotation) * Matrix.CreateTranslation(transform.Position) * modelMesh.ParentBone.Transform;
+						effect.View = camera.ViewMatrix;
+						effect.Projection = camera.ProjectionMatrix;
 					}
 
 					modelMesh.Draw();
