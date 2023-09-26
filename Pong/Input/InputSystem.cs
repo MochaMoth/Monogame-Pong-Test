@@ -15,6 +15,8 @@ namespace MochaMothMedia.Pong.Input
 		{
 			PreviousState = new InputState();
 			CurrentState = new InputState();
+
+			_previousMousePosition = Mouse.GetState().Position.ToVector2();
 		}
 
 		public override void Update(GameTime gameTime)
@@ -29,7 +31,6 @@ namespace MochaMothMedia.Pong.Input
 
 			CurrentState.LookHorizontal = _previousMousePosition.X - mouse.X;
 			CurrentState.LookVertical = _previousMousePosition.Y - mouse.Y;
-			_previousMousePosition = mouse.Position.ToVector2();
 		}
 	}
 }

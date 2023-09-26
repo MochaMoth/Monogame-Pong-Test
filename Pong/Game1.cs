@@ -30,13 +30,15 @@ namespace MochaMothMedia.Pong
 				PreferredBackBufferHeight = 1080
 			};
 			Content.RootDirectory = "Content";
-			IsMouseVisible = true;
+			IsMouseVisible = false;
 			Window.AllowUserResizing = true;
 			Window.ClientSizeChanged += HandleResize;
 		}
 
 		protected override void Initialize()
 		{
+			Mouse.SetPosition(_graphics.PreferredBackBufferWidth / 2, _graphics.PreferredBackBufferHeight / 2);
+
 			_ecsWorld = new WorldBuilder()
 				.AddSystem(new InputSystem())
 				.AddSystem(new BoxSystem())
@@ -78,6 +80,8 @@ namespace MochaMothMedia.Pong
 				Exit();
 
 			base.Update(gameTime);
+
+			Mouse.SetPosition(_graphics.PreferredBackBufferWidth / 2, _graphics.PreferredBackBufferHeight / 2);
 		}
 
 		protected override void Draw(GameTime gameTime)

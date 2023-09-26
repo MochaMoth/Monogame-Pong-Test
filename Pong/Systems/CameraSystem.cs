@@ -10,6 +10,7 @@ using Matrix = System.Numerics.Matrix4x4;
 using GameTime = Microsoft.Xna.Framework.GameTime;
 using MochaMothMedia.Pong.Input;
 using MochaMoth.Pong.Numerics;
+using System.Diagnostics;
 
 namespace MochaMothMedia.Pong.Systems
 {
@@ -40,6 +41,7 @@ namespace MochaMothMedia.Pong.Systems
 			Quaternion pitchRotation = Quaternion.CreateFromAxisAngle(Vector3.Transform(Vector3.UnitX, transform.Rotation), MathHelper.ToRadians(lookVector.Y * camera.RotationSpeed * gameTime.ElapsedGameTime.Milliseconds));
 			Quaternion yawRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathHelper.ToRadians(lookVector.X * camera.RotationSpeed * gameTime.ElapsedGameTime.Milliseconds));
 			transform.Rotation = Quaternion.Normalize(yawRotation * pitchRotation * transform.Rotation);
+			Debug.WriteLine($"Look Vector: {lookVector.X}, {lookVector.Y}");
 
 			// Apply Translation
 			Vector3 movementVector = InputSystem.CurrentState.NormalizedTrueVector;
