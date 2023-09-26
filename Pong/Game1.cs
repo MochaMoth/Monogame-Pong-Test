@@ -9,6 +9,7 @@ using GameTime = Microsoft.Xna.Framework.GameTime;
 using Game = Microsoft.Xna.Framework.Game;
 using GraphicsDeviceManager = Microsoft.Xna.Framework.GraphicsDeviceManager;
 using PlayerIndex = Microsoft.Xna.Framework.PlayerIndex;
+using MochaMothMedia.Pong.Input;
 
 namespace MochaMothMedia.Pong
 {
@@ -24,7 +25,9 @@ namespace MochaMothMedia.Pong
 		{
 			_graphics = new GraphicsDeviceManager(this)
 			{
-				GraphicsProfile = GraphicsProfile.HiDef
+				GraphicsProfile = GraphicsProfile.HiDef,
+				PreferredBackBufferWidth = 1920,
+				PreferredBackBufferHeight = 1080
 			};
 			Content.RootDirectory = "Content";
 			IsMouseVisible = true;
@@ -35,6 +38,7 @@ namespace MochaMothMedia.Pong
 		protected override void Initialize()
 		{
 			_ecsWorld = new WorldBuilder()
+				.AddSystem(new InputSystem())
 				.AddSystem(new BoxSystem())
 				.AddSystem(new CameraSystem(_graphics))
 				.AddSystem(new SkyboxRenderSystem(GraphicsDevice))

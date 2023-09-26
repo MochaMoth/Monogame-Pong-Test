@@ -3,10 +3,13 @@ using MochaMothMedia.Pong.Components;
 using MonoGame.Extended.Entities;
 using MonoGame.Extended.Entities.Systems;
 using Vector3 = System.Numerics.Vector3;
+using Vector2 = System.Numerics.Vector2;
 using Quaternion = System.Numerics.Quaternion;
 using MathHelper = Microsoft.Xna.Framework.MathHelper;
-using Matrix = Microsoft.Xna.Framework.Matrix;
+using Matrix = System.Numerics.Matrix4x4;
 using GameTime = Microsoft.Xna.Framework.GameTime;
+using MochaMothMedia.Pong.Input;
+using MochaMoth.Pong.Numerics;
 
 namespace MochaMothMedia.Pong.Systems
 {
@@ -32,38 +35,21 @@ namespace MochaMothMedia.Pong.Systems
 			Transform transform = _transformMapper.Get(entityId);
 			Camera camera = _cameraMapper.Get(entityId);
 
+			// Apply Rotation
+			Vector2 lookVector = InputSystem.CurrentState.LookVector;
+			Quaternion pitchRotation = Quaternion.CreateFromAxisAngle(Vector3.Transform(Vector3.UnitX, transform.Rotation), MathHelper.ToRadians(lookVector.Y * camera.RotationSpeed * gameTime.ElapsedGameTime.Milliseconds));
+			Quaternion yawRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathHelper.ToRadians(lookVector.X * camera.RotationSpeed * gameTime.ElapsedGameTime.Milliseconds));
+			transform.Rotation = Quaternion.Normalize(yawRotation * pitchRotation * transform.Rotation);
+
+			// Apply Translation
+			Vector3 movementVector = InputSystem.CurrentState.NormalizedTrueVector;
+			Vector3 worldSpaceMovement = Vector3.Transform(movementVector, Matrix.CreateFromQuaternion(transform.Rotation));
+			transform.Position += worldSpaceMovement * camera.MoveSpeed * gameTime.ElapsedGameTime.Milliseconds;
+
+			// Apply WorldViewProjection Matrices
 			camera.AspectRatio = (float)_graphics.PreferredBackBufferWidth / _graphics.PreferredBackBufferHeight;
-
-			KeyboardState keyboard = Keyboard.GetState();
-
-			float translationAmount = camera.MoveSpeed * gameTime.ElapsedGameTime.Milliseconds;
-			float rotationAmount = camera.RotationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-
-			if (keyboard.IsKeyDown(Keys.A))
-				transform.Position = transform.Position with { X = transform.Position.X - translationAmount };
-			if (keyboard.IsKeyDown(Keys.D))
-				transform.Position = transform.Position with { X = transform.Position.X + translationAmount };
-			if (keyboard.IsKeyDown(Keys.W))
-				transform.Position = transform.Position with { Y = transform.Position.Y + translationAmount };
-			if (keyboard.IsKeyDown(Keys.S))
-				transform.Position = transform.Position with { Y = transform.Position.Y - translationAmount };
-
-			if (keyboard.IsKeyDown(Keys.Q))
-				transform.Position = transform.Position with { Z = transform.Position.Z - translationAmount };
-			if (keyboard.IsKeyDown(Keys.E))
-				transform.Position = transform.Position with { Z = transform.Position.Z + translationAmount };
-
-			if (keyboard.IsKeyDown(Keys.Left))
-				transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathHelper.ToRadians(rotationAmount));
-			if (keyboard.IsKeyDown(Keys.Right))
-				transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathHelper.ToRadians(-rotationAmount));
-			if (keyboard.IsKeyDown(Keys.Up))
-				transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathHelper.ToRadians(rotationAmount));
-			if (keyboard.IsKeyDown(Keys.Down))
-				transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathHelper.ToRadians(-rotationAmount));
-
 			Matrix worldMatrix = Matrix.CreateFromQuaternion(transform.Rotation) * Matrix.CreateTranslation(transform.Position);
-			camera.ViewMatrix = Matrix.Invert(worldMatrix);
+			camera.ViewMatrix = worldMatrix.Invert();
 			camera.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(camera.FovAngle, camera.AspectRatio, camera.NearClipPlane, camera.FarClipPlane);
 		}
 	}

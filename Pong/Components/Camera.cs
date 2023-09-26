@@ -11,6 +11,6 @@ namespace MochaMothMedia.Pong.Components
 		public float NearClipPlane => 0.001f;
 		public float FarClipPlane => 1000f;
 		public float MoveSpeed => 0.005f;
-		public float RotationSpeed => 0.01f;
+		public float RotationSpeed => 0.005f;
 	}
 }
