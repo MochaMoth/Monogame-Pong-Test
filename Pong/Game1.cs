@@ -37,9 +37,9 @@ namespace MochaMothMedia.Pong
 			_ecsWorld = new WorldBuilder()
 				.AddSystem(new BoxSystem())
 				.AddSystem(new CameraSystem(_graphics))
-				//.AddSystem(new TestingRenderingSystem(GraphicsDevice))
+				.AddSystem(new SkyboxRenderSystem(GraphicsDevice))
 				.AddSystem(new RenderSystem(GraphicsDevice))
-				//.AddSystem(new UIRenderSystem(GraphicsDevice))
+				.AddSystem(new UIRenderSystem(GraphicsDevice))
 				.Build();
 
 			Components.Add(_ecsWorld);
@@ -52,7 +52,6 @@ namespace MochaMothMedia.Pong
 			_boxModel = Content.Load<Model>("box");
 			_boxModel2 = Content.Load<Model>("box2");
 			_boxEffect = Content.Load<Effect>("Shaders/TestShader");
-			Statics.Content.TestingEffect = Content.Load<Effect>("Shaders/TestingShader2");
 
 			Statics.Camera.Main = _ecsWorld.CreateEntity();
 			Statics.Camera.Main.Attach(new Transform(new Vector3(0, 0, 10f)));
