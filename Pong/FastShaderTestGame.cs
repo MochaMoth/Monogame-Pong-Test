@@ -4,80 +4,75 @@ using Microsoft.Xna.Framework.Input;
 
 namespace MochaMothMedia.Pong
 {
-	internal class FastShaderTestGame : Game
-	{
-		private GraphicsDeviceManager _graphics;
-		private Model _boxModel;
-		private Effect _boxEffect;
+    public class FastShaderTestGame : Game
+    {
+        private GraphicsDeviceManager _graphics;
+        private SpriteBatch _spriteBatch;
 
-		public FastShaderTestGame()
-		{
-			_graphics = new GraphicsDeviceManager(this);
-			Content.RootDirectory = "Content";
-			IsMouseVisible = true;
-		}
+        private Texture2D _image;
+        private Effect _firstShader;
+        private Model _box;
 
-		protected override void Initialize()
-		{
-			base.Initialize();
-		}
+        public FastShaderTestGame()
+        {
+            _graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content";
+            IsMouseVisible = true;
+        }
 
-		protected override void LoadContent()
-		{
-			_boxModel = Content.Load<Model>("box");
-			_boxEffect = Content.Load<Effect>("Shaders/TestShader");
+        protected override void Initialize()
+        {
+            base.Initialize();
+        }
 
-			foreach (ModelMesh mesh in _boxModel.Meshes)
-			{
-				foreach (ModelMeshPart part in mesh.MeshParts)
-				{
-					part.Effect = _boxEffect;
-					part.Effect.CurrentTechnique = part.Effect.Techniques["Ambient"];
-					part.Effect.CurrentTechnique.Passes[0].Apply();
-				}
-			}
+        protected override void LoadContent()
+        {
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-			base.LoadContent();
-		}
+            _image = Content.Load<Texture2D>("image");
+            _box = Content.Load<Model>("box");
+            _firstShader = Content.Load<Effect>("Shaders/TestShader");
+        }
 
-		protected override void Update(GameTime gameTime)
-		{
-			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-				Exit();
+        protected override void Update(GameTime gameTime)
+        {
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
 
-			base.Update(gameTime);
-		}
+            base.Update(gameTime);
+        }
 
-		protected override void Draw(GameTime gameTime)
-		{
-			foreach (ModelMesh modelMesh in _boxModel.Meshes)
-			{
-				foreach (ModelMeshPart part in modelMesh.MeshParts)
-				{
-					part.Effect.Parameters["World"].SetValue(Matrix.Identity);
-					part.Effect.Parameters["View"].SetValue(Matrix.CreateLookAt(Vector3.Backward * 10f, Vector3.Zero, Vector3.Up));
-					part.Effect.Parameters["Projection"].SetValue(Matrix.CreatePerspectiveFieldOfView(
-						MathHelper.ToRadians(60f),
-						(float)_graphics.PreferredBackBufferWidth / _graphics.PreferredBackBufferHeight,
-						0.001f,
-						1000f));
-				}
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
 
-				//foreach (BasicEffect effect in modelMesh.Effects)
-				//{
-				//	effect.World = Matrix.Identity;
-				//	effect.View = Matrix.CreateLookAt(Vector3.Backward * 10f, Vector3.Zero, Vector3.Up);
-				//	effect.Projection = Matrix.CreatePerspectiveFieldOfView(
-				//		MathHelper.ToRadians(60f),
-				//		(float)_graphics.PreferredBackBufferWidth / _graphics.PreferredBackBufferHeight,
-				//		0.001f,
-				//		1000f);
-				//}
+            Matrix view = Matrix.Identity;
 
-				modelMesh.Draw();
-			}
+            int width = GraphicsDevice.Viewport.Width;
+            int height = GraphicsDevice.Viewport.Height;
+            Matrix projection = Matrix.CreateOrthographicOffCenter(0, width, height, 0, 0, 1);
 
-			base.Draw(gameTime);
-		}
-	}
+            // This fails to render anything.
+            foreach (ModelMesh mesh in _box.Meshes)
+            {
+                foreach (ModelMeshPart part in mesh.MeshParts)
+                {
+                    part.Effect = _firstShader;
+                    _firstShader.Parameters["World"].SetValue(Matrix.Identity);
+                    _firstShader.Parameters["View"].SetValue(view);
+                    _firstShader.Parameters["Projection"].SetValue(projection);
+                }
+                mesh.Draw();
+            }
+
+            // This works correctly
+            //_firstShader.Parameters["view_projection"].SetValue(view * projection);
+
+            //_spriteBatch.Begin(effect: _firstShader);
+            //_spriteBatch.Draw(_image, new Vector2(0, 0), Color.White);
+            //_spriteBatch.End();
+
+            base.Draw(gameTime);
+        }
+    }
 }

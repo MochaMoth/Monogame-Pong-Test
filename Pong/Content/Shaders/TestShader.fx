@@ -1,50 +1,44 @@
-﻿#if OPENGL
-#define SV_POSITION POSITION
-#define VS_SHADERMODEL vs_3_0
-#define PS_SHADERMODEL ps_3_0
-#else
-#define VS_SHADERMODEL vs_4_0
-#define PS_SHADERMODEL ps_4_0
-#endif
-
-float4x4 World;
+﻿float4x4 World;
 float4x4 View;
 float4x4 Projection;
 
-float4 AmbientColor = float4(0.5f, 0.5f, 0.5f, 1.0f);
-float AmbientIntensity = 1.0f;
+float4 AmbientColor = float4(1, 1, 1, 1);
+float AmbientIntensity = 0.1;
 
-struct VertexInput
+struct VertexShaderInput
 {
-	float4 Position: POSITION0;
+    float4 Position : POSITION0;
+    float4 TexCoord : TEXCOORD0;
 };
 
-struct PixelInput
+struct VertexShaderOutput
 {
-	float4 Position: POSITION0;
+    float4 Position : POSITION0;
+    float4 TexCoord : TEXCOORD0;
 };
 
-PixelInput VertexShaderFunction(VertexInput input)
+VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
-	PixelInput output = (PixelInput)0;
+    VertexShaderOutput output;
 
-	float4 worldPosition = mul(input.Position, World);
-	float4 viewPosition = mul(worldPosition, View);
-	output.Position = mul(viewPosition, Projection);
+    float4 worldPosition = mul(input.Position, World);
+    float4 viewPosition = mul(worldPosition, View);
+    output.Position = mul(viewPosition, Projection);
+    output.TexCoord = input.TexCoord;
 
-	return output;
-};
+    return output;
+}
 
-float4 PixelShaderFunction(PixelInput input) : COLOR0
+float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
-	return AmbientColor * AmbientIntensity;
-};
+    return AmbientColor * AmbientIntensity;
+}
 
 technique Ambient
 {
-	pass Pass0
-	{
-		VertexShader = compile VS_SHADERMODEL VertexShaderFunction();
-		PixelShader = compile PS_SHADERMODEL PixelShaderFunction();
-	}
-};
+    pass Pass1
+    {
+        VertexShader = compile vs_2_0 VertexShaderFunction();
+        PixelShader = compile ps_2_0 PixelShaderFunction();
+    }
+}
