@@ -46,11 +46,11 @@ namespace MochaMothMedia.Pong
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            Matrix view = Matrix.Identity;
+            Matrix view = Matrix.CreateLookAt(Vector3.Backward * 10f, Vector3.Zero, Vector3.Up);
 
             int width = GraphicsDevice.Viewport.Width;
             int height = GraphicsDevice.Viewport.Height;
-            Matrix projection = Matrix.CreateOrthographicOffCenter(0, width, height, 0, 0, 1);
+            Matrix projection = Matrix.CreatePerspective(width, height, 0.001f, 1000f);
 
             // This fails to render anything.
             foreach (ModelMesh mesh in _box.Meshes)
