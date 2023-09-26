@@ -7,10 +7,8 @@ namespace MochaMothMedia.Pong
     public class FastShaderTestGame : Game
     {
         private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
 
-        private Texture2D _image;
-        private Effect _firstShader;
+        private Effect _effect;
         private Model _box;
 
         public FastShaderTestGame()
@@ -27,11 +25,18 @@ namespace MochaMothMedia.Pong
 
         protected override void LoadContent()
         {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            _image = Content.Load<Texture2D>("image");
             _box = Content.Load<Model>("box");
-            _firstShader = Content.Load<Effect>("Shaders/TestShader");
+            _effect = Content.Load<Effect>("Shaders/TestShader");
+
+            foreach (ModelMesh modelMesh in _box.Meshes)
+            {
+                foreach (ModelMeshPart part in modelMesh.MeshParts)
+                {
+                    part.Effect = _effect;
+                    part.Effect.CurrentTechnique = part.Effect.Techniques["Ambient"];
+                    part.Effect.CurrentTechnique.Passes[0].Apply();
+                }
+            }
         }
 
         protected override void Update(GameTime gameTime)
@@ -46,31 +51,33 @@ namespace MochaMothMedia.Pong
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            Matrix view = Matrix.CreateLookAt(Vector3.Backward * 10f, Vector3.Zero, Vector3.Up);
+            Matrix worldMatrix = Matrix.CreateFromQuaternion(Quaternion.Identity) * Matrix.CreateTranslation(new Vector3(0, 0, 10f));
+            Matrix viewMatrix = Matrix.Invert(worldMatrix);
+            Matrix projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                MathHelper.ToRadians(45f),
+                (float)_graphics.PreferredBackBufferWidth / _graphics.PreferredBackBufferHeight,
+                0.01f,
+                1000f);
 
-            int width = GraphicsDevice.Viewport.Width;
-            int height = GraphicsDevice.Viewport.Height;
-            Matrix projection = Matrix.CreatePerspective(width, height, 0.001f, 1000f);
-
-            // This fails to render anything.
-            foreach (ModelMesh mesh in _box.Meshes)
+            foreach (ModelMesh modelMesh in _box.Meshes)
             {
-                foreach (ModelMeshPart part in mesh.MeshParts)
-                {
-                    part.Effect = _firstShader;
-                    _firstShader.Parameters["World"].SetValue(Matrix.Identity);
-                    _firstShader.Parameters["View"].SetValue(view);
-                    _firstShader.Parameters["Projection"].SetValue(projection);
-                }
-                mesh.Draw();
+				foreach (ModelMeshPart part in modelMesh.MeshParts)
+				{
+                    _effect.Parameters["World"].SetValue(Matrix.CreateFromQuaternion(Quaternion.Identity) * Matrix.CreateTranslation(Vector3.Zero) * modelMesh.ParentBone.Transform);
+                    _effect.Parameters["View"].SetValue(viewMatrix);
+                    _effect.Parameters["Projection"].SetValue(projectionMatrix);
+                    part.Effect = _effect;
+				}
+
+                //foreach (BasicEffect effect in modelMesh.Effects)
+                //{
+                //    effect.World = Matrix.CreateFromQuaternion(Quaternion.Identity) * Matrix.CreateTranslation(Vector3.Zero) * modelMesh.ParentBone.Transform;
+                //    effect.View = viewMatrix;
+                //    effect.Projection = projectionMatrix;
+                //}
+
+                modelMesh.Draw();
             }
-
-            // This works correctly
-            //_firstShader.Parameters["view_projection"].SetValue(view * projection);
-
-            //_spriteBatch.Begin(effect: _firstShader);
-            //_spriteBatch.Draw(_image, new Vector2(0, 0), Color.White);
-            //_spriteBatch.End();
 
             base.Draw(gameTime);
         }
