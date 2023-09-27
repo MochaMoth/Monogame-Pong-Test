@@ -19,8 +19,8 @@ namespace MochaMothMedia.Pong.Components
 					part.Effect.CurrentTechnique = part.Effect.Techniques["Ambient"];
 					part.Effect.CurrentTechnique.Passes[0].Apply();
 
-					part.Effect.Parameters["AmbientColor"].SetValue(Color.White.ToVector3());
-					part.Effect.Parameters["AmbientIntensity"].SetValue(1);
+					//part.Effect.Parameters["AmbientColor"].SetValue(Color.White.ToVector3());
+					//part.Effect.Parameters["AmbientIntensity"].SetValue(1);
 				}
 			}
 		}

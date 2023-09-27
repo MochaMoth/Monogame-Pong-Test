@@ -10,6 +10,7 @@ using Game = Microsoft.Xna.Framework.Game;
 using GraphicsDeviceManager = Microsoft.Xna.Framework.GraphicsDeviceManager;
 using PlayerIndex = Microsoft.Xna.Framework.PlayerIndex;
 using MochaMothMedia.Pong.Input;
+using MochaMothMedia.Pong.ThirdPersonController;
 
 namespace MochaMothMedia.Pong
 {
@@ -18,6 +19,7 @@ namespace MochaMothMedia.Pong
 		private GraphicsDeviceManager _graphics;
 		private Model _boxModel;
 		private Model _boxModel2;
+		private Model _playerModel;
 		private Effect _boxEffect;
 		private World _ecsWorld;
 
@@ -42,7 +44,9 @@ namespace MochaMothMedia.Pong
 			_ecsWorld = new WorldBuilder()
 				.AddSystem(new InputSystem())
 				.AddSystem(new BoxSystem())
-				.AddSystem(new CameraSystem(_graphics))
+				.AddSystem(new DollyController())
+				.AddSystem(new PlayerController())
+				.AddSystem(new CameraController(_graphics))
 				.AddSystem(new SkyboxRenderSystem(GraphicsDevice))
 				.AddSystem(new RenderSystem(GraphicsDevice))
 				.AddSystem(new UIRenderSystem(GraphicsDevice))
@@ -57,18 +61,28 @@ namespace MochaMothMedia.Pong
 		{
 			_boxModel = Content.Load<Model>("box");
 			_boxModel2 = Content.Load<Model>("box2");
+			_playerModel = Content.Load<Model>("Bean");
 			_boxEffect = Content.Load<Effect>("Shaders/TestShader");
 
+			Entity player = _ecsWorld.CreateEntity();
+			Entity cameraDolly = _ecsWorld.CreateEntity();
 			Statics.Camera.Main = _ecsWorld.CreateEntity();
-			Statics.Camera.Main.Attach(new Transform(new Vector3(0, 0, 10f)));
-			Statics.Camera.Main.Attach(new Camera());
-
 			Entity box = _ecsWorld.CreateEntity();
+			Entity box2 = _ecsWorld.CreateEntity();
+
+			player.Attach(new Transform(Vector3.Zero));
+			player.Attach(new Mesh(_playerModel, _boxEffect));
+			player.Attach(new Player(cameraDolly));
+
+			cameraDolly.Attach(new CameraDolly(player));
+
+			Statics.Camera.Main.Attach(new Transform(new Vector3(0, 0, 10f)));
+			Statics.Camera.Main.Attach(new Camera(cameraDolly));
+
 			box.Attach(new Transform(new Vector3(0, 0, 0)));
 			box.Attach(new Box());
 			box.Attach(new Mesh(_boxModel, _boxEffect));
 
-			Entity box2 = _ecsWorld.CreateEntity();
 			box2.Attach(new Transform(new Vector3(5f, 0, 0)));
 			box2.Attach(new Box());
 			box2.Attach(new Mesh(_boxModel2, _boxEffect));

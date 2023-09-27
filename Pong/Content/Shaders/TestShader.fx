@@ -8,11 +8,15 @@ float AmbientIntensity = 1;
 struct VertexShaderInput
 {
     float4 Position : POSITION0;
+    float2 TexCoord : TEXCOORD0;
+    float4 VertexColor : COLOR0;
 };
 
 struct VertexShaderOutput
 {
     float4 Position : POSITION0;
+    float2 TexCoord : TEXCOORD0;
+    float4 VertexColor : COLOR0;
 };
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
@@ -22,13 +26,15 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     float4 worldPosition = mul(input.Position, World);
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
+    output.TexCoord = input.TexCoord;
+    output.VertexColor = input.VertexColor;
 
     return output;
 }
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
-    return AmbientColor * AmbientIntensity;
+    return saturate(input.VertexColor);
 }
 
 technique Ambient

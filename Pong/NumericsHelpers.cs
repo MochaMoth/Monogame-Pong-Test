@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System;
 
 namespace MochaMoth.Pong.Numerics
 {
@@ -16,6 +17,28 @@ namespace MochaMoth.Pong.Numerics
 				normalizedVector = normalizedVector with { Z = 0 };
 
 			return normalizedVector;
+		}
+
+		public static float Magnitude(this Vector3 inputVector)
+		{
+			return MathF.Sqrt(MathF.Abs(inputVector.X) + MathF.Abs(inputVector.Y) + MathF.Abs(inputVector.Z));
+		}
+
+		public static Vector2 SafeNormalize(this Vector2 inputVector)
+		{
+			Vector2 normalizedVector = Vector2.Normalize(inputVector);
+
+			if (float.IsNaN(normalizedVector.X))
+				normalizedVector = normalizedVector with { X = 0 };
+			if (float.IsNaN(normalizedVector.Y))
+				normalizedVector = normalizedVector with { Y = 0 };
+
+			return normalizedVector;
+		}
+
+		public static float Magnitude(this Vector2 inputVector)
+		{
+			return MathF.Sqrt(MathF.Abs(inputVector.X) + MathF.Abs(inputVector.Y));
 		}
 
 		public static Matrix4x4 Invert(this Matrix4x4 inputMatrix)

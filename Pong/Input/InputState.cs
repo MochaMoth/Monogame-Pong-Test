@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework.Input;
-using MochaMoth.Pong.Numerics;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace MochaMothMedia.Pong.Input
 {
@@ -16,7 +14,6 @@ namespace MochaMothMedia.Pong.Input
 		public Vector2 XYPlane => new Vector2(Horizontal, Vertical);
 		public Vector2 YZPlane => new Vector2(Vertical, Lateral);
 		public Vector3 TrueVector => new Vector3(Horizontal, Vertical, Lateral);
-		public Vector3 NormalizedTrueVector => new Vector3(Horizontal, Vertical, Lateral).SafeNormalize();
 
 		public Vector2 LookVector => new Vector2(LookHorizontal, LookVertical);
 	}

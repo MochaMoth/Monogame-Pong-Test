@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework.Input;
-using MochaMothMedia.Pong.Components;
+﻿using MochaMothMedia.Pong.Components;
 using MonoGame.Extended.Entities;
 using MonoGame.Extended.Entities.Systems;
 using Vector3 = System.Numerics.Vector3;
@@ -8,19 +7,19 @@ using Quaternion = System.Numerics.Quaternion;
 using MathHelper = Microsoft.Xna.Framework.MathHelper;
 using Matrix = System.Numerics.Matrix4x4;
 using GameTime = Microsoft.Xna.Framework.GameTime;
+using GraphicsDeviceManager = Microsoft.Xna.Framework.GraphicsDeviceManager;
 using MochaMothMedia.Pong.Input;
 using MochaMoth.Pong.Numerics;
-using System.Diagnostics;
 
-namespace MochaMothMedia.Pong.Systems
+namespace MochaMothMedia.Pong.ThirdPersonController
 {
-	internal class CameraSystem : EntityProcessingSystem
+	internal class CameraController : EntityProcessingSystem
 	{
 		private ComponentMapper<Transform> _transformMapper;
 		private ComponentMapper<Camera> _cameraMapper;
-		private readonly Microsoft.Xna.Framework.GraphicsDeviceManager _graphics;
+		private readonly GraphicsDeviceManager _graphics;
 
-		public CameraSystem(Microsoft.Xna.Framework.GraphicsDeviceManager graphics) : base(Aspect.All(typeof(Transform), typeof(Camera)))
+		public CameraController(GraphicsDeviceManager graphics) : base(Aspect.All(typeof(Transform), typeof(Camera)))
 		{
 			_graphics = graphics;
 		}
@@ -35,18 +34,21 @@ namespace MochaMothMedia.Pong.Systems
 		{
 			Transform transform = _transformMapper.Get(entityId);
 			Camera camera = _cameraMapper.Get(entityId);
+			CameraDolly dolly = camera.Dolly.Get<CameraDolly>();
+			Transform targetTransform = dolly.Target.Get<Transform>();
 
 			// Apply Rotation
-			Vector2 lookVector = InputSystem.CurrentState.LookVector;
-			Quaternion pitchRotation = Quaternion.CreateFromAxisAngle(Vector3.Transform(Vector3.UnitX, transform.Rotation), MathHelper.ToRadians(lookVector.Y * camera.RotationSpeed * gameTime.ElapsedGameTime.Milliseconds));
-			Quaternion yawRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathHelper.ToRadians(lookVector.X * camera.RotationSpeed * gameTime.ElapsedGameTime.Milliseconds));
-			transform.Rotation = Quaternion.Normalize(yawRotation * pitchRotation * transform.Rotation);
-			Debug.WriteLine($"Look Vector: {lookVector.X}, {lookVector.Y}");
+			Quaternion pitchRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathHelper.ToRadians(dolly.Pitch));
+			Quaternion yawRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathHelper.ToRadians(dolly.Yaw));
+			transform.Rotation = Quaternion.Normalize(yawRotation * pitchRotation);
 
 			// Apply Translation
-			Vector3 movementVector = InputSystem.CurrentState.NormalizedTrueVector;
-			Vector3 worldSpaceMovement = Vector3.Transform(movementVector, Matrix.CreateFromQuaternion(transform.Rotation));
-			transform.Position += worldSpaceMovement * camera.MoveSpeed * gameTime.ElapsedGameTime.Milliseconds;
+			Vector3 localRight = Vector3.Transform(Vector3.UnitX, transform.Rotation);
+			Vector3 newPosition = targetTransform.Position;
+			newPosition += Vector3.UnitY * dolly.Height;
+			newPosition += Vector3.Transform(Vector3.UnitZ, transform.Rotation) * dolly.Depth;
+			newPosition += localRight * dolly.Offset;
+			transform.Position = newPosition;
 
 			// Apply WorldViewProjection Matrices
 			camera.AspectRatio = (float)_graphics.PreferredBackBufferWidth / _graphics.PreferredBackBufferHeight;
