@@ -4,7 +4,7 @@ using MonoGame.Extended.Entities;
 using MonoGame.Extended.Entities.Systems;
 using Matrix = Microsoft.Xna.Framework.Matrix;
 using GameTime = Microsoft.Xna.Framework.GameTime;
-using Color = Microsoft.Xna.Framework.Color;
+using Vector3 = System.Numerics.Vector3;
 
 namespace MochaMothMedia.Pong.Systems
 {
@@ -28,22 +28,39 @@ namespace MochaMothMedia.Pong.Systems
 		public override void Draw(GameTime gameTime)
 		{
 			Camera camera = Statics.Camera.Main.Get<Camera>();
+			Vector3 cameraPosition = Statics.Camera.Main.Get<Transform>().Position;
 
-			foreach (int entityId in ActiveEntities)
+			foreach (Entity spotLightEntity in Statics.Lights.SpotLights)
 			{
-				Transform transform = _transformMapper.Get(entityId);
-				Mesh mesh = _meshMapper.Get(entityId);
+				SpotLight spotLight = spotLightEntity.Get<SpotLight>();
+				Transform spotLightTransform = spotLightEntity.Get<Transform>();
 
-				foreach (ModelMesh modelMesh in mesh.Model.Meshes)
+				foreach (int entityId in ActiveEntities)
 				{
-					foreach (ModelMeshPart part in modelMesh.MeshParts)
-					{
-						part.Effect.Parameters["World"].SetValue(Matrix.CreateFromQuaternion(transform.Rotation) * Matrix.CreateTranslation(transform.Position) * modelMesh.ParentBone.Transform);
-						part.Effect.Parameters["View"].SetValue(camera.ViewMatrix);
-						part.Effect.Parameters["Projection"].SetValue(camera.ProjectionMatrix);
-					}
+					Transform transform = _transformMapper.Get(entityId);
+					Mesh mesh = _meshMapper.Get(entityId);
+					mesh.ApplyRenderSettings();
 
-					modelMesh.Draw();
+					foreach (ModelMesh modelMesh in mesh.Model.Meshes)
+					{
+						Matrix worldMatrix = Matrix.CreateFromQuaternion(transform.Rotation) * Matrix.CreateTranslation(transform.Position) * modelMesh.ParentBone.Transform;
+
+						foreach (ModelMeshPart part in modelMesh.MeshParts)
+						{
+							part.Effect.CurrentTechnique = part.Effect.Techniques["Ambient"];
+							part.Effect.Parameters["LightPosition"]?.SetValue(spotLightTransform.Position);
+							part.Effect.Parameters["LightPower"]?.SetValue(spotLight.Power);
+							part.Effect.Parameters["World"]?.SetValue(worldMatrix);
+							part.Effect.Parameters["LightView"]?.SetValue(spotLight.ViewMatrix);
+							part.Effect.Parameters["LightProjection"]?.SetValue(spotLight.ProjectionMatrix);
+							part.Effect.Parameters["View"]?.SetValue(camera.ViewMatrix);
+							part.Effect.Parameters["ViewPosition"]?.SetValue(cameraPosition);
+							part.Effect.Parameters["Projection"]?.SetValue(camera.ProjectionMatrix);
+							part.Effect.Parameters["ShadowMap"]?.SetValue(spotLight.ShadowMap);
+						}
+
+						modelMesh.Draw();
+					}
 				}
 			}
 		}

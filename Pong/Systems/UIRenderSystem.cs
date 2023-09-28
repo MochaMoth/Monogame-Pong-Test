@@ -28,11 +28,15 @@ namespace MochaMothMedia.Pong.Systems
 
 		public override void Draw(GameTime gameTime)
 		{
+			DepthStencilState previousStencilState = _graphicsDevice.DepthStencilState;
+
 			_spriteBatch.Begin();
 
 			_spriteBatch.Draw(_sampleTexture, new Rectangle(5, 5, 25, 25), Color.White);
 
 			_spriteBatch.End();
+
+			_graphicsDevice.DepthStencilState = previousStencilState;
 		}
 	}
 }

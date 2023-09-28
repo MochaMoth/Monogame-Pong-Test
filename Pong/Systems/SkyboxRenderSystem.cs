@@ -15,7 +15,7 @@ namespace MochaMothMedia.Pong.Systems
 
 		public override void Draw(GameTime gameTime)
 		{
-			_graphicsDevice.Clear(Color.CornflowerBlue);
+			_graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1.0f, 0);
 		}
 	}
 }

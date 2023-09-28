@@ -4,6 +4,7 @@ using MonoGame.Extended.Entities;
 using MonoGame.Extended.Entities.Systems;
 using GameTime = Microsoft.Xna.Framework.GameTime;
 using MathHelper = Microsoft.Xna.Framework.MathHelper;
+using Matrix = System.Numerics.Matrix4x4;
 using Vector3 = System.Numerics.Vector3;
 using Vector2 = System.Numerics.Vector2;
 using Quaternion = System.Numerics.Quaternion;
@@ -30,16 +31,18 @@ namespace MochaMothMedia.Pong.ThirdPersonController
 			Player player = _playerMapper.Get(entityId);
 			CameraDolly dolly = player.CameraDolly.Get<CameraDolly>();
 
-			// Apply Translation
 			Vector2 movementInput = InputSystem.CurrentState.XZPlane;
 			movementInput = movementInput.SafeNormalize();
 
 			Vector3 movementVector = new Vector3(movementInput.X, 0, movementInput.Y);
 			Vector3 worldSpaceMovement = Vector3.Transform(movementVector, Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathHelper.ToRadians(dolly.Yaw)));
-			transform.Position += worldSpaceMovement * player.RunSpeed * gameTime.ElapsedGameTime.Milliseconds;
+			Vector3 targetPosition = transform.Position + (worldSpaceMovement * player.RunSpeed * gameTime.ElapsedGameTime.Milliseconds);
+			Vector3 newForward = (targetPosition - transform.Position).SafeNormalize();
 
-			Vector3 forward = (worldSpaceMovement - transform.Position);
-			transform.Rotation = Quaternion.CreateFromYawPitchRoll(forward.X, forward.Y, forward.Z);
+			if (newForward != Vector3.Zero)
+				transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathHelper.ToRadians(180f)) * Quaternion.CreateFromRotationMatrix(Matrix.CreateWorld(transform.Position, worldSpaceMovement, Vector3.UnitY));
+
+			transform.Position = targetPosition;
 		}
 	}
 }

@@ -2,13 +2,11 @@
 using MonoGame.Extended.Entities;
 using MonoGame.Extended.Entities.Systems;
 using Vector3 = System.Numerics.Vector3;
-using Vector2 = System.Numerics.Vector2;
 using Quaternion = System.Numerics.Quaternion;
 using MathHelper = Microsoft.Xna.Framework.MathHelper;
 using Matrix = System.Numerics.Matrix4x4;
 using GameTime = Microsoft.Xna.Framework.GameTime;
 using GraphicsDeviceManager = Microsoft.Xna.Framework.GraphicsDeviceManager;
-using MochaMothMedia.Pong.Input;
 using MochaMoth.Pong.Numerics;
 
 namespace MochaMothMedia.Pong.ThirdPersonController
